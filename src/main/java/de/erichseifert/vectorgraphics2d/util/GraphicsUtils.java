@@ -45,8 +45,10 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -62,6 +64,8 @@ public abstract class GraphicsUtils {
 		new FontRenderContext(null, false, true);
 	private static final String FONT_TEST_STRING =
 		"Falsches Üben von Xylophonmusik quält jeden größeren Zwerg";
+	private static final Map<String, String> KNOWN_PHYS_FONTS =
+		new HashMap<String, String>();
 
 	/**
 	 * Default constructor that prevents creation of class.
@@ -285,7 +289,7 @@ public abstract class GraphicsUtils {
 				Font.SERIF.equals(family) ||
 				Font.MONOSPACED.equals(family));
 	}
-
+	
 	/**
 	 * Try to guess physical font from the properties of a logical font, like
 	 * "Dialog", "Serif", "Monospaced" etc.
@@ -297,9 +301,21 @@ public abstract class GraphicsUtils {
 	public static Font getPhysicalFont(Font logicalFont, String testText) {
 		String logicalFamily = logicalFont.getFamily();
 		if (!isLogicalFontFamily(logicalFamily)) {
+			// A physical font already, nothing to do
 			return logicalFont;
 		}
+		
+		String mappedPhysicalFamily = KNOWN_PHYS_FONTS.get(logicalFamily);
+		if (mappedPhysicalFamily != null) {
+			// Mapped already, find the font
+			for (Font physicalFont : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+				if (physicalFont.getFamily().equals(mappedPhysicalFamily)) {
+					return physicalFont.deriveFont(logicalFont.getStyle(), logicalFont.getSize2D());
+				}
+			}
+		}
 
+		// Try to guess physical font
 		final TextLayout logicalLayout =
 			new TextLayout(testText, logicalFont, FONT_RENDER_CONTEXT);
 
@@ -318,6 +334,7 @@ public abstract class GraphicsUtils {
 			// Derive identical variant of physical font
 			physicalFont = physicalFont.deriveFont(
 					logicalFont.getStyle(), logicalFont.getSize2D());
+			
 			TextLayout physicalLayout =
 					new TextLayout(testText, physicalFont, FONT_RENDER_CONTEXT);
 
@@ -330,6 +347,8 @@ public abstract class GraphicsUtils {
 					physicalLayout.getVisibleAdvance() == logicalLayout.getVisibleAdvance()) {
 				// Store matching font in list
 				physicalFonts.add(physicalFont);
+				
+				KNOWN_PHYS_FONTS.put(logicalFamily, physicalFamily);
 			}
 		}
 
