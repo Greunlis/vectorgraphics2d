@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -26,7 +26,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import de.erichseifert.vectorgraphics2d.intermediate.CommandSequence;
@@ -74,8 +74,7 @@ public class FillPaintedShapeAsImageFilter extends StreamingFilter {
 		imageGraphics.fill(shape);
 		imageGraphics.dispose();
 
-		DrawImageCommand drawImageCommand = new DrawImageCommand(image, imageWidth, imageHeight, x, y, width, height);
-		return drawImageCommand;
+		return new DrawImageCommand(image, imageWidth, imageHeight, x, y, width, height);
 	}
 
 	@Override
@@ -83,10 +82,10 @@ public class FillPaintedShapeAsImageFilter extends StreamingFilter {
 		if (lastSetPaintCommand != null && command instanceof FillShapeCommand) {
 			FillShapeCommand fillShapeCommand = (FillShapeCommand) command;
 			DrawImageCommand drawImageCommand = getDrawImageCommand(fillShapeCommand, lastSetPaintCommand);
-			return Arrays.<Command<?>>asList(drawImageCommand);
+			return Collections.<Command<?>>singletonList(drawImageCommand);
 		}
 
-		return Arrays.<Command<?>>asList(command);
+		return Collections.<Command<?>>singletonList(command);
 	}
 }
 

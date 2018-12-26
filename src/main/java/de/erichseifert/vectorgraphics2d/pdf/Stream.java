@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -22,10 +22,10 @@
 package de.erichseifert.vectorgraphics2d.pdf;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.DeflaterOutputStream;
@@ -34,10 +34,10 @@ import java.util.zip.DeflaterOutputStream;
  * Represents a stream object in the sense of the PDF specification.
  * The {@code Stream} has a defined length.
  */
-class Stream implements PDFObject, Closeable {
+class Stream extends OutputStream implements PDFObject {
 	public enum Filter {
 		FLATE
-	};
+	}
 
 	private final ByteArrayOutputStream data;
 	private final List<Filter> filters;
@@ -49,16 +49,26 @@ class Stream implements PDFObject, Closeable {
 	 */
 	public Stream(Filter... filters) {
 		data = new ByteArrayOutputStream();
-		this.filters = new ArrayList<Filter>(filters.length);
-		for (Filter filter : filters) {
-			this.filters.add(filter);
-		}
+		this.filters = new ArrayList<>(filters.length);
+		this.filters.addAll(Arrays.asList(filters));
 
 		filteredData = data;
 		for (Filter filter : filters) {
 			if (filter == Filter.FLATE) {
 				filteredData = new DeflaterOutputStream(filteredData);
 			}
+		}
+	}
+
+	@Override
+	public void write(int b) throws IOException {
+		if (isClosed()) {
+			throw new IOException("Unable to write to closed stream.");
+		}
+		try {
+			this.filteredData.write(b);
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to write to the output stream", e);
 		}
 	}
 
@@ -73,10 +83,9 @@ class Stream implements PDFObject, Closeable {
 		try {
 			this.filteredData.write(data);
 		} catch (IOException e) {
-			throw new RuntimeException("Unable to write to ByteArrayOutputStream", e);
+			throw new RuntimeException("Unable to write to the output stream", e);
 		}
 	}
-
 
 	/**
 	 * Returns the size of the stream contents in bytes.
@@ -93,11 +102,11 @@ class Stream implements PDFObject, Closeable {
 	/**
 	 * Returns the content that has been written to this {@code Stream}.
 	 * @return Stream content.
-	 * @throws if the stream is still open.
+	 * @throws IllegalStateException if the stream is still open.
 	 */
 	public byte[] getContent() {
 		if (!isClosed()) {
-			throw new IllegalStateException("Unable to retrive the content of an open Stream. Close the stream first.");
+			throw new IllegalStateException("Unable to retrieve the content of an open Stream. Close the stream first.");
 		}
 		return data.toByteArray();
 	}
@@ -112,7 +121,7 @@ class Stream implements PDFObject, Closeable {
 		try {
 			filteredData.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 

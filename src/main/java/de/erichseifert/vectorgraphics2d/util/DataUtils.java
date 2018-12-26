@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -24,10 +24,13 @@ package de.erichseifert.vectorgraphics2d.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -36,10 +39,21 @@ import java.util.regex.Pattern;
  * collections like maps or lists.
  */
 public abstract class DataUtils {
+	/** Standard pattern to format numbers */
+	private static final DecimalFormat DOUBLE_FORMAT =
+			new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	private static final DecimalFormat FLOAT_FORMAT =
+			new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
+	static {
+		DOUBLE_FORMAT.setMaximumFractionDigits(15);
+		FLOAT_FORMAT.setMaximumFractionDigits(6);
+	}
+
 	/**
 	 * Default constructor that prevents creation of class.
 	 */
-	protected DataUtils() {
+	DataUtils() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -59,7 +73,7 @@ public abstract class DataUtils {
 					"The number of keys and values differs.");
 		}
 		// Fill map with keys and values
-		Map<K, V> map = new LinkedHashMap<K, V>(keys.length);
+		Map<K, V> map = new LinkedHashMap<>(keys.length);
 		for (int i = 0; i < keys.length; i++) {
 			K key = keys[i];
 			V value = values[i];
@@ -115,7 +129,7 @@ public abstract class DataUtils {
 		if (elements == null || elements.length == 0) {
 			return "";
 		}
-		List<Double> list = new ArrayList<Double>(elements.length);
+		List<Double> list = new ArrayList<>(elements.length);
 		for (Double element : elements) {
 			list.add(element);
 		}
@@ -133,7 +147,7 @@ public abstract class DataUtils {
 		if (elements == null || elements.length == 0) {
 			return "";
 		}
-		List<Float> list = new ArrayList<Float>(elements.length);
+		List<Float> list = new ArrayList<>(elements.length);
 		for (Float element : elements) {
 			list.add(element);
 		}
@@ -146,6 +160,9 @@ public abstract class DataUtils {
 	 * @return largest value.
 	 */
 	public static int max(int... values) {
+		if (values.length == 0) {
+			throw new IllegalArgumentException("No values provided: Cannot determine maximum value.");
+		}
 		int max = values[0];
 		for (int i = 1; i < values.length; i++) {
 			if (values[i] > max) {
@@ -180,10 +197,10 @@ public abstract class DataUtils {
 	 */
 	public static String format(Number number) {
 		String formatted;
-		if (number instanceof Double || number instanceof Float) {
-			formatted = Double.toString(number.doubleValue())
-					.replaceAll("\\.0+$", "")
-					.replaceAll("(\\.[0-9]*[1-9])0+$", "$1");
+		if (number instanceof Double) {
+			formatted = DOUBLE_FORMAT.format(number.doubleValue());
+		} else if (number instanceof Float) {
+			formatted = FLOAT_FORMAT.format(number.floatValue());
 		} else {
 			formatted = number.toString();
 		}
@@ -211,7 +228,7 @@ public abstract class DataUtils {
 	 */
 	public static List<Float> asList(float[] elements) {
 		int size = (elements != null) ? elements.length : 0;
-		List<Float> list = new ArrayList<Float>(size);
+		List<Float> list = new ArrayList<>(size);
 		if (elements != null) {
 			for (Float elem : elements) {
 				list.add(elem);
@@ -228,7 +245,7 @@ public abstract class DataUtils {
 	 */
 	public static List<Double> asList(double[] elements) {
 		int size = (elements != null) ? elements.length : 0;
-		List<Double> list = new ArrayList<Double>(size);
+		List<Double> list = new ArrayList<>(size);
 		if (elements != null) {
 			for (Double elem : elements) {
 				list.add(elem);

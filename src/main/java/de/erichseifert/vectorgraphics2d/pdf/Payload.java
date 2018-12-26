@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -49,6 +49,10 @@ class Payload extends OutputStream {
 		empty = false;
 	}
 
+	public boolean isEmpty() {
+		return empty;
+	}
+
 	@Override
 	public void close() throws IOException {
 		super.close();
@@ -62,16 +66,7 @@ class Payload extends OutputStream {
 		try {
 			filteredStream = filterClass.getConstructor(OutputStream.class)
 					.newInstance(filteredStream);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
+		} catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

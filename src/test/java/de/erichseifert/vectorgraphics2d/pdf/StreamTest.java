@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -22,30 +22,62 @@
 package de.erichseifert.vectorgraphics2d.pdf;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import org.junit.Test;
 
 public class StreamTest {
 	@Test(expected = IllegalStateException.class)
-	public void testGetLengthThrowsExceptionWhenStreamIsOpen() {
+	public void getLengthThrowsExceptionWhenStreamIsOpen() {
 		Stream stream = new Stream();
 
 		stream.getLength();
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void testGetContentThrowsExceptionWhenStreamIsOpen() {
+	public void getContentThrowsExceptionWhenStreamIsOpen() {
 		Stream stream = new Stream();
 
 		stream.getContent();
 	}
 
+	@Test
+	public void writeIntWritesDataToStream() throws IOException {
+		Stream stream = new Stream();
+
+		stream.write(42);
+		stream.close();
+
+		assertArrayEquals(new byte[] {42}, stream.getContent());
+	}
+
 	@Test(expected = IOException.class)
-	public void testWriteThrowsExceptionWhenStreamIsClosed() throws IOException {
+	public void writeIntThrowsExceptionWhenStreamIsClosed() throws IOException {
+		Stream stream = new Stream();
+		stream.close();
+
+		stream.write(42);
+	}
+
+	@Test
+	public void writeBytesWritesDataToStream() throws IOException {
+		Stream stream = new Stream();
+
+		stream.write(new byte[] {42});
+		stream.close();
+
+		assertArrayEquals(new byte[] {42}, stream.getContent());
+	}
+
+	@Test(expected = IOException.class)
+	public void writeBytesThrowsExceptionWhenStreamIsClosed() throws IOException {
 		Stream stream = new Stream();
 		stream.close();
 
@@ -53,7 +85,7 @@ public class StreamTest {
 	}
 
 	@Test
-	public void testLengthIsZeroOnInitialization() {
+	public void lengthIsZeroOnInitialization() {
 		Stream stream = new Stream();
 		stream.close();
 
@@ -63,7 +95,7 @@ public class StreamTest {
 	}
 
 	@Test
-	public void testLengthEqualsByteCountInWrittenDataWhenNoFiltersAreSet() throws IOException {
+	public void lengthEqualsByteCountInWrittenDataWhenNoFiltersAreSet() throws IOException {
 		byte[] garbage = new byte[] {4, 2, 42, -1, 0};
 		Stream stream = new Stream();
 		stream.write(garbage);
@@ -75,7 +107,7 @@ public class StreamTest {
 	}
 
 	@Test
-	public void testWrittenDataIsIdenticalToStreamContentWhenNoFiltersAreUsed() throws IOException {
+	public void writtenDataIsIdenticalToStreamContentWhenNoFiltersAreUsed() throws IOException {
 		byte[] data = new byte[] {4, 2, 42, -1, 0};
 		Stream stream = new Stream();
 		stream.write(data);
@@ -87,7 +119,7 @@ public class StreamTest {
 	}
 
 	@Test
-	public void testContentsAreCompressedWhenFlateFilterIsSet() throws DataFormatException, IOException {
+	public void contentsAreCompressedWhenFlateFilterIsSet() throws DataFormatException, IOException {
 		byte[] inputData = new byte[] {4, 2, 42, -1, 0};
 		Stream stream = new Stream(Stream.Filter.FLATE);
 		stream.write(inputData);
@@ -101,5 +133,22 @@ public class StreamTest {
 		decompressor.inflate(decompressedOutput);
 		assertThat(decompressedOutput, is(inputData));
 	}
-}
 
+	@Test
+	public void getFiltersReturnsListOfFilters() {
+		Stream stream = new Stream(Stream.Filter.FLATE);
+
+		List<Stream.Filter> filters = stream.getFilters();
+
+		List<Stream.Filter> expected = Collections.singletonList(Stream.Filter.FLATE);
+		assertEquals(expected, filters);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void getFiltersResultIsUnmodifiable() {
+		Stream stream = new Stream();
+
+		List<Stream.Filter> filters = stream.getFilters();
+		filters.add(Stream.Filter.FLATE);
+	}
+}

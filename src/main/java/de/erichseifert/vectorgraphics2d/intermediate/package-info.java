@@ -19,13 +19,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with VectorGraphics2D.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.erichseifert.vectorgraphics2d.intermediate.commands;
-
-import java.awt.Color;
-
-public class SetXORModeCommand extends StateCommand<Color> {
-	public SetXORModeCommand(Color mode) {
-		super(mode);
-	}
-}
-
+/**
+ * Classes for the VectorGraphics2D intermediate language.
+ * It describes all calls to the Graphics2D interface of Java using commands
+ * and filters.
+ */
+package de.erichseifert.vectorgraphics2d.intermediate;

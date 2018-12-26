@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -23,7 +23,7 @@ package de.erichseifert.vectorgraphics2d.intermediate.filters;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -36,11 +36,11 @@ import de.erichseifert.vectorgraphics2d.intermediate.commands.SetTransformComman
 import de.erichseifert.vectorgraphics2d.intermediate.commands.TransformCommand;
 
 public class AbsoluteToRelativeTransformsFilter extends StreamingFilter {
-	private Stack<AffineTransform> transforms;
+	private final Stack<AffineTransform> transforms;
 
 	public AbsoluteToRelativeTransformsFilter(CommandSequence stream) {
 		super(stream);
-		transforms = new Stack<AffineTransform>();
+		transforms = new Stack<>();
 	}
 
 	@Override
@@ -73,9 +73,9 @@ public class AbsoluteToRelativeTransformsFilter extends StreamingFilter {
 			}
 			relativeTransform.concatenate(absoluteTransform);
 			TransformCommand transformCommand = new TransformCommand(relativeTransform);
-			return Arrays.<Command<?>>asList(transformCommand);
+			return Collections.<Command<?>>singletonList(transformCommand);
 		}
-		return Arrays.<Command<?>>asList(command);
+		return Collections.<Command<?>>singletonList(command);
 	}
 
 	private AffineTransform getCurrentTransform() {

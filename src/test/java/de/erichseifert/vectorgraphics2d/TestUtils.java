@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -55,10 +55,10 @@ public abstract class TestUtils {
 	}
 
 	public static class XMLFragment {
-		private static final Pattern CDATA = Pattern.compile("\\s*<!\\[CDATA\\[(.*?)\\]\\]>");
+		private static final Pattern CDATA = Pattern.compile("\\s*<!\\[CDATA\\[(.*?)]]>");
 		private static final Pattern COMMENT = Pattern.compile("\\s*<!--(.*?)-->");
-		private static final Pattern TAG_BEGIN = Pattern.compile("\\s*<(/|\\?|!)?\\s*([^\\s>/\\?]+)");
-		private static final Pattern TAG_END = Pattern.compile("\\s*(/|\\?)?>");
+		private static final Pattern TAG_BEGIN = Pattern.compile("\\s*<([/?!])?\\s*([^\\s>/?]+)");
+		private static final Pattern TAG_END = Pattern.compile("\\s*([/?])?>");
 		private static final Pattern TAG_ATTRIBUTE = Pattern.compile("\\s*([^\\s>=]+)=(\"[^\"]*\"|'[^']*')");
 		private static final Pattern DOCTYPE_PART = Pattern.compile("\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)");
 
@@ -78,13 +78,13 @@ public abstract class TestUtils {
 			this.name = name;
 			this.type = type;
 			this.attributes = Collections.unmodifiableMap(
-					new TreeMap<String, String>(attributes));
+					new TreeMap<>(attributes));
 			this.matchStart = matchStart;
 			this.matchEnd = matchEnd;
 		}
 
 		public static XMLFragment parse(String xmlString, int matchStart) {
-			Map<String, String> attrs = new IdentityHashMap<String, String>();
+			Map<String, String> attrs = new IdentityHashMap<>();
 
 			Matcher cdataMatch = CDATA.matcher(xmlString);
 			cdataMatch.region(matchStart, xmlString.length());
@@ -254,7 +254,7 @@ public abstract class TestUtils {
 
 	private static List<XMLFragment> parseXML(String xmlString) {
 		XMLFragment frag;
-		List<XMLFragment> fragments = new LinkedList<XMLFragment>();
+		List<XMLFragment> fragments = new LinkedList<>();
 		int startPos = 0;
 		while ((frag = XMLFragment.parse(xmlString, startPos)) != null) {
 			fragments.add(frag);

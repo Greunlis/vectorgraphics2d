@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -21,6 +21,7 @@
  */
 package de.erichseifert.vectorgraphics2d.util;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
@@ -35,7 +36,15 @@ import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.awt.geom.*;
+import java.awt.geom.Arc2D;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
@@ -52,7 +61,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-
 import javax.swing.ImageIcon;
 
 /**
@@ -70,7 +78,7 @@ public abstract class GraphicsUtils {
 	/**
 	 * Default constructor that prevents creation of class.
 	 */
-	protected GraphicsUtils() {
+	GraphicsUtils() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -120,8 +128,11 @@ public abstract class GraphicsUtils {
 			return false;
 		}
 		DataBuffer dataBuffer = alphaRaster.getDataBuffer();
+		final int elemBits = DataBuffer.getDataTypeSize(dataBuffer.getDataType());
+		final int alphaBits = elemBits/bimage.getRaster().getNumBands();
+		final int alphaShift = (elemBits - alphaBits);
 		for (int i = 0; i < dataBuffer.getSize(); i++) {
-			int alpha = dataBuffer.getElem(i);
+			int alpha = dataBuffer.getElem(i) >>> alphaShift;
 			if (alpha < 255) {
 				return true;
 			}
@@ -130,8 +141,8 @@ public abstract class GraphicsUtils {
 	}
 
 	/**
-	 * Converts an arbitrary image to a {@code BufferedImage}.
-	 * @param image Image that should be converted.
+	 * Converts a rendered image instance to a {@code BufferedImage}.
+	 * @param image Rendered image that should be converted.
 	 * @return a buffered image containing the image pixels, or the original
 	 *         instance if the image already was of type {@code BufferedImage}.
 	 */
@@ -146,7 +157,7 @@ public abstract class GraphicsUtils {
 		boolean isRasterPremultiplied = cm.isAlphaPremultiplied();
 		Hashtable<String, Object> properties = null;
 		if (image.getPropertyNames() != null) {
-			properties = new Hashtable<String, Object>();
+			properties = new Hashtable<>();
 			for (String key : image.getPropertyNames()) {
 				properties.put(key, image.getProperty(key));
 			}
@@ -264,8 +275,8 @@ public abstract class GraphicsUtils {
 			if (font1 == font2) {
 				return 0;
 			}
-			Set<String> variantNames1 = new HashSet<String>();
-			Set<String> variantNames2 = new HashSet<String>();
+			Set<String> variantNames1 = new HashSet<>();
+			Set<String> variantNames2 = new HashSet<>();
 			for (int style : STYLES) {
 				variantNames1.add(font1.deriveFont(style).getPSName());
 				variantNames2.add(font2.deriveFont(style).getPSName());
@@ -321,7 +332,7 @@ public abstract class GraphicsUtils {
 
 		// Create a list of matches sorted by font expressiveness (in descending order)
 		Queue<Font> physicalFonts =
-				new PriorityQueue<Font>(1, FONT_EXPRESSIVENESS_COMPARATOR);
+				new PriorityQueue<>(1, FONT_EXPRESSIVENESS_COMPARATOR);
 
 		Font[] allPhysicalFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 		for (Font physicalFont : allPhysicalFonts) {
@@ -369,23 +380,22 @@ public abstract class GraphicsUtils {
 		int width = image.getWidth();
 		int height = image.getHeight();
 
+		if (alphaRaster == null) {
+			BufferedImage opaqueAlphaImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+			Graphics g = opaqueAlphaImage.getGraphics();
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, width, height);
+			return opaqueAlphaImage;
+		}
+
 		ColorModel cm;
 		WritableRaster raster;
 		// TODO Handle bitmap masks (work on ImageDataStream is necessary)
-		/*
-		if (image.getTransparency() == BufferedImage.BITMASK) {
-            byte[] arr = {(byte) 0, (byte) 255};
-
-            cm = new IndexColorModel(1, 2, arr, arr, arr);
-            raster = Raster.createPackedRaster(DataBuffer.TYPE_BYTE,
-            		width, height, 1, 1, null);
-		} else {*/
-            ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            int[] bits = {8};
-            cm = new ComponentColorModel(colorSpace, bits, false, true,
-            		Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-            raster = cm.createCompatibleWritableRaster(width, height);
-		//}
+		ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+		int[] bits = {8};
+		cm = new ComponentColorModel(colorSpace, bits, false, true,
+				Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+		raster = cm.createCompatibleWritableRaster(width, height);
 
 		BufferedImage alphaImage = new BufferedImage(cm, raster, false, null);
 
@@ -430,7 +440,8 @@ public abstract class GraphicsUtils {
 			pathAIterator.next();
 			pathBIterator.next();
 		}
-		// When the iterator of shapeA is done and shapeA equals shapeB, the iterator of shapeB must also be done
+		// When the iterator of shapeA is done and shapeA equals shapeB,
+		// the iterator of shapeB must also be done
 		if (!pathBIterator.isDone()) {
 			return false;
 		}

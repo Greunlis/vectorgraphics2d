@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -30,6 +30,7 @@ import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class StreamingFilterTest {
 		StreamingFilter filtered = new StreamingFilter(stream) {
 			@Override
 			protected List<Command<?>> filter(Command<?> command) {
-				return Arrays.<Command<?>>asList(command);
+				return Collections.<Command<?>>singletonList(command);
 			}
 		};
 

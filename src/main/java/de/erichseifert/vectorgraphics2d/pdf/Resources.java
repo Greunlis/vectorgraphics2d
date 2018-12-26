@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -22,6 +22,7 @@
 package de.erichseifert.vectorgraphics2d.pdf;
 
 import java.awt.Font;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -56,11 +57,11 @@ class Resources extends DefaultPDFObject {
 	public Resources() {
 		super(null, null, false);
 
-		procSet = new LinkedList<String>();
-		fontsByFontId = new HashMap<String, TrueTypeFont>();
-		fontIDsByFont = new HashMap<Font, String>();
-		images = new HashMap<PDFObject, String>();
-		transparencies = new HashMap<Double, String>();
+		procSet = new LinkedList<>();
+		fontsByFontId = new HashMap<>();
+		fontIDsByFont = new HashMap<>();
+		images = new HashMap<>();
+		transparencies = new HashMap<>();
 
 		setProcSet(VALUE_PROC_SET);
 	}
@@ -93,7 +94,7 @@ class Resources extends DefaultPDFObject {
 		Map<String, PDFObject> dictEntry =
 				(Map<String, PDFObject>) dict.get(KEY_IMAGE);
 		if (dictEntry == null) {
-			dictEntry = new LinkedHashMap<String, PDFObject>();
+			dictEntry = new LinkedHashMap<>();
 			dict.put(KEY_IMAGE, dictEntry);
 		}
 
@@ -108,7 +109,7 @@ class Resources extends DefaultPDFObject {
 		Map<String, Map<String, Object>> dictEntry =
 				(Map<String, Map<String, Object>>) dict.get(KEY_TRANSPARENCY);
 		if (dictEntry == null) {
-			dictEntry = new LinkedHashMap<String, Map<String, Object>>();
+			dictEntry = new LinkedHashMap<>();
 			dict.put(KEY_TRANSPARENCY, dictEntry);
 		}
 
@@ -124,9 +125,7 @@ class Resources extends DefaultPDFObject {
 
 	public void setProcSet(String... procedureNames) {
 		procSet.clear();
-		for (String procedureName : procedureNames) {
-			procSet.add(procedureName);
-		}
+		procSet.addAll(Arrays.asList(procedureNames));
 	}
 
 	public List<String> getProcSet() {

@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -24,14 +24,13 @@ package de.erichseifert.vectorgraphics2d.svg;
 import de.erichseifert.vectorgraphics2d.Document;
 import de.erichseifert.vectorgraphics2d.Processor;
 import de.erichseifert.vectorgraphics2d.intermediate.CommandSequence;
-import de.erichseifert.vectorgraphics2d.intermediate.commands.Command;
 import de.erichseifert.vectorgraphics2d.intermediate.filters.FillPaintedShapeAsImageFilter;
 import de.erichseifert.vectorgraphics2d.intermediate.filters.StateChangeGroupingFilter;
 import de.erichseifert.vectorgraphics2d.util.PageSize;
 
 /**
- * {@code Processor} implementation that translates {@link CommandSequence}s to the
- * <i>Scaled Vector Graphics</i> (SVG) format.
+ * {@code Processor} implementation that translates {@link CommandSequence}s to
+ * a {@code Document} in the <i>Scaled Vector Graphics</i> (SVG) format.
  */
 public class SVGProcessor implements Processor {
 	/**
@@ -43,7 +42,6 @@ public class SVGProcessor implements Processor {
 	public Document getDocument(CommandSequence commands, PageSize pageSize) {
 		FillPaintedShapeAsImageFilter shapesAsImages = new FillPaintedShapeAsImageFilter(commands);
 		CommandSequence filtered = new StateChangeGroupingFilter(shapesAsImages);
-		SVGDocument doc = new SVGDocument(filtered, pageSize);
-		return doc;
+		return new SVGDocument(filtered, pageSize);
 	}
 }

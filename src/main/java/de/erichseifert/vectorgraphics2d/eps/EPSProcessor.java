@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -28,8 +28,8 @@ import de.erichseifert.vectorgraphics2d.intermediate.filters.FillPaintedShapeAsI
 import de.erichseifert.vectorgraphics2d.util.PageSize;
 
 /**
- * {@code Processor} implementation that translates {@link CommandSequence}s to string
- * in the <i>Encapsulated PostScript®</i> (EPS) format.
+ * {@code Processor} implementation that translates {@link CommandSequence}s to
+ * a {@code Document} in the <i>Encapsulated PostScript&reg;</i> (EPS) format.
  */
 public class EPSProcessor implements Processor {
 	/**
@@ -43,7 +43,6 @@ public class EPSProcessor implements Processor {
 		// TODO Apply image transparency => image mask filter
 		// TODO Apply optimization filter
 		FillPaintedShapeAsImageFilter paintedShapeAsImageFilter = new FillPaintedShapeAsImageFilter(commands);
-		EPSDocument doc = new EPSDocument(paintedShapeAsImageFilter, pageSize);
-		return doc;
+		return new EPSDocument(paintedShapeAsImageFilter, pageSize);
 	}
 }

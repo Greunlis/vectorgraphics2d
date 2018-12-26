@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -39,7 +39,7 @@ public class CharacterTest extends TestCase {
 
 		Charset latin1 = Charset.forName("ISO-8859-1");
 		CharsetEncoder latin1Encoder = latin1.newEncoder();
-		List<String> charactersInCharset = new ArrayList<String>();
+		List<String> charactersInCharset = new ArrayList<>();
 		for (char char_ = Character.MIN_VALUE; char_ < Character.MAX_VALUE; char_++) {
 			String javaString = String.valueOf(char_);
 			if (latin1Encoder.canEncode(char_)) {

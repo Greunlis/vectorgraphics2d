@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -25,20 +25,35 @@ import de.erichseifert.vectorgraphics2d.eps.EPSProcessor;
 import de.erichseifert.vectorgraphics2d.pdf.PDFProcessor;
 import de.erichseifert.vectorgraphics2d.svg.SVGProcessor;
 
-public class Processors {
+/**
+ * <p>Utility class that provides simplified access to processors for different
+ * file formats. At the moment three implementations of processors are available:
+ * {@code "eps"}, {@code "pdf"}, and {@code "svg"}</p>
+ * <p>A new processor can be retrieved by calling the {@link #get(String)}
+ * method with the format name:</p>
+ * <pre>Processor pdfProcessor = Processors.get("pdf");</pre>
+ */
+public abstract class Processors {
+	/**
+	 * Default constructor that prevents creation of class.
+	 */
+	Processors() {
+		throw new UnsupportedOperationException();
+	}
+
 	public static Processor get(String format) {
 		if (format == null) {
 			throw new NullPointerException("Format cannot be null.");
 		}
-		if (format.equals("eps")) {
-			return new EPSProcessor();
-		} else if (format.equals("pdf")) {
-			return new PDFProcessor(true);
-		} else if (format.equals("svg")) {
-			return new SVGProcessor();
-		} else {
-			throw new IllegalArgumentException("Unknown format \"" + format + "\"");
+		switch (format) {
+			case "eps":
+				return new EPSProcessor();
+			case "pdf":
+				return new PDFProcessor(true);
+			case "svg":
+				return new SVGProcessor();
+			default:
+				throw new IllegalArgumentException("Unknown format \"" + format + "\"");
 		}
 	}
 }
-

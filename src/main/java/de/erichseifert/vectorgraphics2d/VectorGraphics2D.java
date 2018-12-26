@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -88,8 +88,11 @@ import de.erichseifert.vectorgraphics2d.intermediate.commands.TranslateCommand;
 import de.erichseifert.vectorgraphics2d.util.GraphicsUtils;
 
 /**
- * Base for classes that want to implement vector export.
- * @author Erich Seifert
+ * <p>Implementation of the Graphics2D interface to Java to generate a sequence of
+ * commands. An instance of {@code VectorGraphics2D} can be used to replace any
+ * {@code Graphics2D} object. It can be created with its standard constructor:</p>
+ * <pre>Graphics2D g = new VectorGraphics2D();</pre>
+ *
  * @see <a href="http://www.java2s.com/Code/Java/2D-Graphics-GUI/YourownGraphics2D.htm">http://www.java2s.com/Code/Java/2D-Graphics-GUI/YourownGraphics2D.htm</a>
  */
 public class VectorGraphics2D extends Graphics2D implements Cloneable {
@@ -127,13 +130,9 @@ public class VectorGraphics2D extends Graphics2D implements Cloneable {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		try {
-			VectorGraphics2D clone = (VectorGraphics2D) super.clone();
-			clone.state = (GraphicsState) state.clone();
-			return clone;
-		} catch (CloneNotSupportedException e) {
-			return null;
-		}
+		VectorGraphics2D clone = (VectorGraphics2D) super.clone();
+		clone.state = (GraphicsState) state.clone();
+		return clone;
 	}
 
 	@Override
@@ -344,8 +343,7 @@ public class VectorGraphics2D extends Graphics2D implements Cloneable {
 			hitShape = getStroke().createStrokedShape(hitShape);
 		}
 		hitShape = state.transformShape(hitShape);
-		boolean hit = hitShape.intersects(rect);
-		return hit;
+		return hitShape.intersects(rect);
 	}
 
 	@Override
@@ -733,7 +731,7 @@ public class VectorGraphics2D extends Graphics2D implements Cloneable {
 		BufferedImage bi =
 			new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE);
 	    Graphics g = bi.getGraphics();
-	    FontMetrics fontMetrics = g.getFontMetrics(getFont());
+	    FontMetrics fontMetrics = g.getFontMetrics(f);
 	    g.dispose();
 	    return fontMetrics;
 	}

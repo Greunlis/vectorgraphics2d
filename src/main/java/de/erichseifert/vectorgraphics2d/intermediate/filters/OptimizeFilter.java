@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -21,7 +21,7 @@
  */
 package de.erichseifert.vectorgraphics2d.intermediate.filters;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class OptimizeFilter extends StreamingFilter {
 
 	public OptimizeFilter(CommandSequence stream) {
 		super(stream);
-		buffer = new LinkedList<Command<?>>();
+		buffer = new LinkedList<>();
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class OptimizeFilter extends StreamingFilter {
 	@Override
 	protected List<Command<?>> filter(Command<?> command) {
 		if (!isStateChange(command)) {
-			return Arrays.<Command<?>>asList(command);
+			return Collections.<Command<?>>singletonList(command);
 		}
 		Iterator<Command<?>> i = buffer.iterator();
 		Class<?> cls = command.getClass();

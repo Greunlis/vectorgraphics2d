@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -51,7 +51,7 @@ public class GroupingFilterTest {
 		resultStream.add(new SetTransformCommand(AffineTransform.getTranslateInstance(5.0, 5.0)));
 		resultStream.add(new DrawShapeCommand(new Line2D.Double(0.0, 1.0, 5.0, 6.0)));
 
-		List<Command<?>> expectedStream = new LinkedList<Command<?>>();
+		List<Command<?>> expectedStream = new LinkedList<>();
 		Iterator<Command<?>> resultCloneIterator = resultStream.iterator();
 		Group group1 = new Group();
 		group1.add(resultCloneIterator.next());

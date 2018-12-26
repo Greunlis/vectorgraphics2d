@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -31,6 +31,7 @@ import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -49,7 +50,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -87,11 +87,12 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
 /**
- * TODO Implement composite support for SVG (filters?)
- * TODO Implement paint support for SVG
- * @author Erich Seifert
+ * Represents a {@code Document} in the <i>Scaled Vector Graphics</i> (SVG)
+ * format.
  */
-public class SVGDocument extends SizedDocument {
+// TODO Implement composite support for SVG (filters?)
+// TODO Implement paint support for SVG
+class SVGDocument extends SizedDocument {
 	private static final String SVG_DOCTYPE_QNAME = "svg";
 	private static final String SVG_DOCTYPE_PUBLIC_ID = "-//W3C//DTD SVG 1.1//EN";
 	private static final String SVG_DOCTYPE_SYSTEM_ID = "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd";
@@ -102,8 +103,6 @@ public class SVGDocument extends SizedDocument {
 	private static final String PREFIX_CLIP = "clip";
 
 	// TODO Resolution settings
-	private static final double DPI = 72.0;
-	private static final double PX_PER_MM = DPI/25.4;
 	private static final String CHARSET = "UTF-8";
 
 	private final Stack<GraphicsState> states;
@@ -131,9 +130,9 @@ public class SVGDocument extends SizedDocument {
 	public SVGDocument(CommandSequence commands, PageSize pageSize) {
 		super(pageSize, true);
 
-		states = new Stack<GraphicsState>();
+		states = new Stack<>();
 		states.push(new GraphicsState());
-		clippingPathElements = new HashMap<Integer, Element>();
+		clippingPathElements = new HashMap<>();
 
 		// Prepare DOM
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -149,12 +148,7 @@ public class SVGDocument extends SizedDocument {
 		DOMImplementation domImpl = docBuilder.getDOMImplementation();
 		DocumentType docType = domImpl.createDocumentType(SVG_DOCTYPE_QNAME, SVG_DOCTYPE_PUBLIC_ID, SVG_DOCTYPE_SYSTEM_ID);
 		doc = domImpl.createDocument(SVG_NAMESPACE_URI, "svg", docType);
-		// FIXME: Some XML parsers don't support setting standalone to "false"
-		try {
-			doc.setXmlStandalone(false);
-		} catch (AbstractMethodError e) {
-			System.err.println("Your XML parser does not support standalone XML documents.");
-		}
+		doc.setXmlStandalone(false);
 
 		root = doc.getDocumentElement();
 		initRoot();
@@ -178,10 +172,10 @@ public class SVGDocument extends SizedDocument {
 		// Add svg element
 		root.setAttribute("xmlns:" + XLINK_NAMESPACE, XLINK_NAMESPACE_URI);
 		root.setAttribute("version", "1.1");
-		root.setAttribute("x", DataUtils.format(x/PX_PER_MM) + "mm");
-		root.setAttribute("y", DataUtils.format(y/PX_PER_MM) + "mm");
-		root.setAttribute("width", DataUtils.format(width/PX_PER_MM) + "mm");
-		root.setAttribute("height", DataUtils.format(height/PX_PER_MM) + "mm");
+		root.setAttribute("x", DataUtils.format(x) + "px");
+		root.setAttribute("y", DataUtils.format(y) + "px");
+		root.setAttribute("width", DataUtils.format(width) + "px");
+		root.setAttribute("height", DataUtils.format(height) + "px");
 		root.setAttribute("viewBox", DataUtils.join(" ", new double[] {x, y, width, height}));
 	}
 
@@ -198,8 +192,6 @@ public class SVGDocument extends SizedDocument {
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
 					doc.getDoctype().getSystemId());
 			transformer.transform(new DOMSource(doc), new StreamResult(out));
-		} catch (TransformerConfigurationException e) {
-			throw new IOException(e.getMessage());
 		} catch (TransformerException e) {
 			throw new IOException(e.getMessage());
 		}
@@ -292,8 +284,14 @@ public class SVGDocument extends SizedDocument {
 			addToGroup(e);
 		} else if (command instanceof FillShapeCommand) {
 			FillShapeCommand c = (FillShapeCommand) command;
-			Element e = getElement(c.getValue());
-			e.setAttribute("style", getStyle(true));
+			Shape shape = c.getValue();
+			Element e = getElement(shape);
+			if (shape instanceof Path2D) {
+				Path2D path = (Path2D) shape;
+				e.setAttribute("style", getStyle(true, path.getWindingRule() == Path2D.WIND_NON_ZERO));
+			} else {
+				e.setAttribute("style", getStyle(true));
+			}
 			addToGroup(e);
 		}
 	}
@@ -358,6 +356,10 @@ public class SVGDocument extends SizedDocument {
 	}
 
 	private String getStyle(boolean filled) {
+		return getStyle(filled, true);
+	}
+	
+	private String getStyle(boolean filled, boolean fillRullNonZero) {
 		StringBuilder style = new StringBuilder();
 
 		Color color = getCurrentState().getColor();
@@ -368,6 +370,10 @@ public class SVGDocument extends SizedDocument {
 			appendStyle(style, "fill", colorOutput);
 			if (color.getAlpha() < 255) {
 				appendStyle(style, "fill-opacity", opacity);
+			}
+			if (!fillRullNonZero) {
+				// nonzero is the default; only need to set the style rule for non-default evenodd winding rule.
+				appendStyle(style, "fill-rule", "evenodd");
 			}
 		} else {
 			appendStyle(style, "fill", "none");
@@ -460,21 +466,21 @@ public class SVGDocument extends SizedDocument {
 			int segmentType = segments.currentSegment(coords);
 			switch (segmentType) {
 			case PathIterator.SEG_MOVETO:
-				out.append("M").append(coords[0]).append(",").append(coords[1]);
+				out.append("M").append(DataUtils.format(coords[0])).append(",").append(DataUtils.format(coords[1]));
 				break;
 			case PathIterator.SEG_LINETO:
-				out.append("L").append(coords[0]).append(",").append(coords[1]);
+				out.append("L").append(coords[0]).append(",").append(DataUtils.format(coords[1]));
 				break;
 			case PathIterator.SEG_CUBICTO:
 				out.append("C")
-					.append(coords[0]).append(",").append(coords[1]).append(" ")
-					.append(coords[2]).append(",").append(coords[3]).append(" ")
-					.append(coords[4]).append(",").append(coords[5]);
+					.append(DataUtils.format(coords[0])).append(",").append(DataUtils.format(coords[1])).append(" ")
+					.append(DataUtils.format(coords[2])).append(",").append(DataUtils.format(coords[3])).append(" ")
+					.append(DataUtils.format(coords[4])).append(",").append(DataUtils.format(coords[5]));
 				break;
 			case PathIterator.SEG_QUADTO:
 				out.append("Q")
-					.append(coords[0]).append(",").append(coords[1]).append(" ")
-					.append(coords[2]).append(",").append(coords[3]);
+					.append(DataUtils.format(coords[0])).append(",").append(DataUtils.format(coords[1])).append(" ")
+					.append(DataUtils.format(coords[2])).append(",").append(DataUtils.format(coords[3]));
 				break;
 			case PathIterator.SEG_CLOSE:
 				out.append("Z");
@@ -591,4 +597,3 @@ public class SVGDocument extends SizedDocument {
 		return elem;
 	}
 }
-

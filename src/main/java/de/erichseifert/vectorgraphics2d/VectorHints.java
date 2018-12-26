@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -25,11 +25,18 @@ import java.awt.RenderingHints;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Hints to control quality settings and choices for vector graphics output.
+ */
 public abstract class VectorHints {
 	protected VectorHints() {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Base type of all keys used along with the {@link VectorHints} class to
+	 * control algorithm and output choices in the vector graphics output.
+	 */
 	public static class Key extends RenderingHints.Key {
 		private final String description;
 
@@ -53,8 +60,12 @@ public abstract class VectorHints {
 		}
 	}
 
+	/**
+	 * Base type of all values used along with the {@link VectorHints} class to
+	 * control algorithm and output choices in the vector graphics output.
+	 */
 	public static class Value {
-		private static final Set<String> values = new HashSet<String>();
+		private static final Set<String> values = new HashSet<>();
 
 		private synchronized static void register(Value value) {
 			String id = value.getId();

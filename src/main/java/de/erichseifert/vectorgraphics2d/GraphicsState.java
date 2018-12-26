@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -36,6 +36,9 @@ import java.awt.geom.Rectangle2D;
 
 import de.erichseifert.vectorgraphics2d.util.GraphicsUtils;
 
+/**
+ * Representation of the Graphics2D status at a certain point in time.
+ */
 public class GraphicsState implements Cloneable {
 	/** Default background color. */
 	public static final Color DEFAULT_BACKGROUND = Color.BLACK;

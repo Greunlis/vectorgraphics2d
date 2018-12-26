@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -38,7 +38,7 @@ class PageTreeNode implements PDFObject {
 	 */
 	public PageTreeNode(PageTreeNode parent) {
 		this.parent = parent;
-		this.children = new LinkedList<Page>();
+		this.children = new LinkedList<>();
 	}
 
 	/**

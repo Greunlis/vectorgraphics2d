@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -31,6 +31,7 @@ import java.awt.color.ColorSpace;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -79,7 +80,11 @@ import de.erichseifert.vectorgraphics2d.util.ImageDataStream.Interleaving;
 import de.erichseifert.vectorgraphics2d.util.LineWrapOutputStream;
 import de.erichseifert.vectorgraphics2d.util.PageSize;
 
-public class EPSDocument extends SizedDocument {
+/**
+ * Represents a {@code Document} in the <i>Encapsulated PostScript&reg;</i>
+ * (EPS) format.
+ */
+class EPSDocument extends SizedDocument {
 	/** Constant to convert values from millimeters to PostScript® units
 	(1/72th inch). */
 	private static final double UNITS_PER_MM = 72.0 / 25.4;
@@ -107,7 +112,7 @@ public class EPSDocument extends SizedDocument {
 
 	public EPSDocument(CommandSequence commands, PageSize pageSize) {
 		super(pageSize, true);
-		elements = new LinkedList<String>();
+		elements = new LinkedList<>();
 		addHeader();
 		for (Command<?> command : commands) {
 			handle(command);
@@ -255,7 +260,12 @@ public class EPSDocument extends SizedDocument {
 			elements.add(getOutput(c.getValue(), c.getX(), c.getY()));
 		} else if (command instanceof FillShapeCommand) {
 			FillShapeCommand c = (FillShapeCommand) command;
-			elements.add(getOutput(c.getValue()) + " fill");
+			String fillMethod = " fill";
+			Shape shape = c.getValue();
+			if (shape instanceof Path2D && ((Path2D) shape).getWindingRule() == Path2D.WIND_EVEN_ODD) {
+				fillMethod = " eofill";
+			}
+			elements.add(getOutput(c.getValue()) + fillMethod);
 		} else if (command instanceof CreateCommand) {
 			elements.add("gsave");
 		} else if (command instanceof DisposeCommand) {

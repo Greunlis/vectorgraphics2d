@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -94,7 +94,7 @@ public class AlphaToMaskOp implements BufferedImageOp {
 		boolean isRasterPremultiplied = destCM.isAlphaPremultiplied();
 		Hashtable<String, Object> properties = null;
 		if (src.getPropertyNames() != null) {
-			properties = new Hashtable<String, Object>();
+			properties = new Hashtable<>();
 			for (String key : src.getPropertyNames()) {
 				properties.put(key, src.getProperty(key));
 			}

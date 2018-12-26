@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -23,6 +23,7 @@ package de.erichseifert.vectorgraphics2d.pdf;
 
 import static de.erichseifert.vectorgraphics2d.TestUtils.Template;
 import static de.erichseifert.vectorgraphics2d.TestUtils.assertTemplateEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,6 +52,12 @@ public class PDFProcessorTest {
 		Document processed = pdfProcessor.getDocument(sequence, PAGE_SIZE);
 		processed.writeTo(bytes);
 		return bytes.toString("ISO-8859-1");
+	}
+
+	@Test public void pdfProcessorCreatesCompressedDocumentByDefault() {
+		PDFProcessor pdfProcessor = new PDFProcessor();
+
+		assertTrue(pdfProcessor.isCompressed());
 	}
 
 	@Test public void envelopeForEmptyDocument() throws IOException {
@@ -82,13 +89,13 @@ public class PDFProcessorTest {
 			"endobj",
 			"4 0 obj",
 			"<<",
-			"/Length 99",
+			"/Length 97",
 			">>",
 			"stream",
 			"q",
 			"1 1 1 rg 1 1 1 RG",
 			"2.834645669291339 0 0 -2.834645669291339 0 85.03937007874016 cm",
-			"/Fnt0 12.0 Tf",
+			"/Fnt0 12 Tf",
 			"Q",
 			"endstream",
 			"endobj",

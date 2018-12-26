@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -30,11 +30,18 @@ import de.erichseifert.vectorgraphics2d.intermediate.filters.StateChangeGrouping
 import de.erichseifert.vectorgraphics2d.util.PageSize;
 
 /**
- * {@code Processor} implementation that translates {@link CommandSequence}s to a string
- * in the <i>Portable Document Format</i> (PDF).
+ * {@code Processor} implementation that translates {@link CommandSequence}s to
+ * a {@code Document} in the <i>Portable Document Format</i> (PDF).
  */
 public class PDFProcessor implements Processor {
 	private final boolean compressed;
+
+	/**
+	 * Initializes a {@code PDFProcessor} for compressed PDF documents.
+	 */
+	public PDFProcessor() {
+		this(true);
+	}
 
 	/**
 	 * Initializes a {@code PDFProcessor} with the specified compression settings.
@@ -57,7 +64,6 @@ public class PDFProcessor implements Processor {
 		AbsoluteToRelativeTransformsFilter absoluteToRelativeTransformsFilter = new AbsoluteToRelativeTransformsFilter(commands);
 		FillPaintedShapeAsImageFilter paintedShapeAsImageFilter = new FillPaintedShapeAsImageFilter(absoluteToRelativeTransformsFilter);
 		CommandSequence filtered = new StateChangeGroupingFilter(paintedShapeAsImageFilter);
-		PDFDocument doc = new PDFDocument(filtered, pageSize, isCompressed());
-		return doc;
+		return new PDFDocument(filtered, pageSize, isCompressed());
 	}
 }

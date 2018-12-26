@@ -1,7 +1,7 @@
 /*
  * VectorGraphics2D: Vector export for Java(R) Graphics2D
  *
- * (C) Copyright 2010-2016 Erich Seifert <dev[at]erichseifert.de>,
+ * (C) Copyright 2010-2018 Erich Seifert <dev[at]erichseifert.de>,
  * Michael Seifert <mseifert[at]error-reports.org>
  *
  * This file is part of VectorGraphics2D.
@@ -21,69 +21,75 @@
  */
 package de.erichseifert.vectorgraphics2d.pdf;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
 
-import static org.junit.Assert.assertThat;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.junit.Test;
 
+import de.erichseifert.vectorgraphics2d.util.FormattingWriter;
+
 public class PDFDocumentTest {
+	private static final String PDF_CHARSET = "ISO-8859-1";
+	private static final String PDF_EOL = "\n";
+
 	@Test
-	public void testSerializeTrueTypeFont() {
+	public void serializeTrueTypeFont() throws IOException {
 		String encoding = "CustomEncoding";
 		String baseFont = "MyBaseFont";
 		TrueTypeFont font = new TrueTypeFont(encoding, baseFont);
 
-		String serialized = PDFDocument.serialize(font);
+		byte[] serialized = PDFDocument.serialize(font);
 
-		String expected =
-				"<<\n" +
-						"/Type /Font\n" +
-						"/Subtype /TrueType\n" +
-						"/Encoding /" + encoding + "\n" +
-						"/BaseFont /" + baseFont + "\n" +
-						">>";
-		assertThat(serialized, is(expected));
+		ByteArrayOutputStream expected = new ByteArrayOutputStream();
+		FormattingWriter expectedString = new FormattingWriter(expected, PDF_CHARSET, PDF_EOL);
+		expectedString.writeln("<<");
+		expectedString.writeln("/Type /Font");
+		expectedString.writeln("/Subtype /TrueType");
+		expectedString.write("/Encoding /").writeln(encoding);
+		expectedString.write("/BaseFont /").writeln(baseFont);
+		expectedString.write(">>");
+		assertArrayEquals(expected.toByteArray(), serialized);
 	}
 
 	@Test
-	public void testSerializeStreamWhenStreamIsFiltered() throws IOException {
+	public void serializeStreamWhenStreamIsFiltered() throws IOException {
 		Stream stream = new Stream(Stream.Filter.FLATE);
 		byte[] inputData = new byte[] {4, 2, 42, -1, 0};
 		stream.write(inputData);
 		stream.close();
 
-		String serialized = PDFDocument.serialize(stream);
+		byte[] serialized = PDFDocument.serialize(stream);
 
-		String expected =
-				"<<\n" +
-						"/Length " + stream.getLength() + "\n" +
-						"/Filter /FlateDecode\n" +
-						">>\n" +
-						"stream\n" +
-						new String(stream.getContent()) + "\n" +
-						"endstream";
-		assertThat(serialized, is(expected));
+		ByteArrayOutputStream expected = new ByteArrayOutputStream();
+		FormattingWriter expectedString = new FormattingWriter(expected, PDF_CHARSET, PDF_EOL);
+		expectedString.writeln("<<");
+		expectedString.write("/Length ").writeln(stream.getLength());
+		expectedString.writeln("/Filter /FlateDecode");
+		expectedString.writeln(">>");
+		expectedString.writeln("stream");
+		expectedString.writeln(stream.getContent());
+		expectedString.write("endstream");
+		assertArrayEquals(expected.toByteArray(), serialized);
 	}
 
 	@Test
-	public void testSerializeStreamWhenStreamIsNotFiltered() throws IOException {
+	public void serializeStreamWhenStreamIsNotFiltered() throws IOException {
 		Stream stream = new Stream();
 		byte[] inputData = new byte[] {4, 2, 42, -1, 0};
 		stream.write(inputData);
 		stream.close();
 
-		String serialized = PDFDocument.serialize(stream);
+		byte[] serialized = PDFDocument.serialize(stream);
 
-		String expected =
-				"<<\n" +
-						"/Length " + stream.getLength() + "\n" +
-						">>\n" +
-						"stream\n" +
-						new String(stream.getContent()) + "\n" +
-						"endstream";
-		assertThat(serialized, is(expected));
+		ByteArrayOutputStream expected = new ByteArrayOutputStream();
+		FormattingWriter expectedString = new FormattingWriter(expected, PDF_CHARSET, PDF_EOL);
+		expectedString.writeln("<<");
+		expectedString.write("/Length ").writeln(stream.getLength());
+		expectedString.writeln(">>");
+		expectedString.writeln("stream");
+		expectedString.writeln(stream.getContent());
+		expectedString.write("endstream");
+		assertArrayEquals(expected.toByteArray(), serialized);
 	}
 }
-
